@@ -30,7 +30,8 @@ const fetchProperties = async () => {
 
     const data = await res.json();
 
-    return data.records.slice(0, 5) || [];
+    // Get the last 5 properties
+    return data.records.slice(-5) || [];
   } catch (error) {
     return [];
   }
