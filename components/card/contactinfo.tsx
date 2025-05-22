@@ -31,10 +31,10 @@ const ContactInfoCard = () => {
           </div>
 
           <Link
-            href={"https://www.facebook.com/share/15JSPKVF7E/?mibextid=wwXIfr"}
+            href={"https://www.facebook.com/people/ABIC-Realty-Consultancy-Corporation/61576086213534/"}
             target="_blank"
           >
-            AbicRealty Corp
+            ABIC Realty & Consultancy Corporation
           </Link>
         </div>
       </div>
