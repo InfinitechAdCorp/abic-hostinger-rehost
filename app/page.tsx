@@ -6,7 +6,6 @@ import PropertySection from "./home/propertysection";
 import FAQSection from "./home/faqsection";
 import RatingSection from "./home/ratingsection";
 import ContactSection from "./home/contactsection";
-
 import { getAuthHeaders } from "@/components/headers";
 
 const fetchProperties = async () => {

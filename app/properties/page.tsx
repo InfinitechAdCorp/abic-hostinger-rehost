@@ -3,7 +3,6 @@ import { Metadata } from "next";
 
 import PropertyCard from "@/components/card/propertycard";
 import NoData from "@/components/error/nodata";
-import { getAuthHeaders } from "@/components/headers";
 
 export const metadata: Metadata = {
   title: "Properties",
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
     siteName: "ABIC Realty",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}media/abic-realty-properties-banner.png`, // Replace with an actual relevant image
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}media/abic-realty-properties-banner.png`,
         width: 1200,
         height: 630,
         alt: "ABIC Realty Property Listings",
@@ -36,7 +35,7 @@ export const metadata: Metadata = {
     description:
       "Explore ABIC Realty's curated selection of properties for sale and rent. Find your perfect home or investment today.",
     images: [
-      `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}media/abic-realty-properties-banner.png`, // Ensure this is a valid image
+      `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}media/abic-realty-properties-banner.png`,
     ],
   },
 
@@ -45,7 +44,6 @@ export const metadata: Metadata = {
     "og:image:height": "630",
   },
 };
-
 
 interface Property {
   id: string;
@@ -75,7 +73,7 @@ const fetchProperties = async (): Promise<Property[]> => {
 
     if (!res.ok) {
       throw new Error(
-        `Failed to fetch properties: ${res.status} - ${res.statusText}`,
+        `Failed to fetch properties: ${res.status} - ${res.statusText}`
       );
     }
 
@@ -84,7 +82,9 @@ const fetchProperties = async (): Promise<Property[]> => {
     return data.records || [];
   } catch (error) {
     throw new Error(
-      `Failed to fetch properties: ${error instanceof Error ? error.message : error}`,
+      `Failed to fetch properties: ${
+        error instanceof Error ? error.message : error
+      }`
     );
   }
 };
@@ -94,10 +94,22 @@ export const dynamic = "force-dynamic";
 export default async function PropertiesPage() {
   const properties = await fetchProperties();
 
+  // Separate and sort properties by status and name
+  const forRent = properties
+    .filter((p) => p.status === "For Rent")
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const forSale = properties
+    .filter((p) => p.status === "For Sale")
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Combine arrays: For Rent first, then For Sale
+  const sortedProperties = [...forRent, ...forSale];
+
   return (
     <section className="flex flex-col items-center w-full">
       <div className="container mx-auto px-4">
-        <div className="">
+        <div>
           <h1 className="font-bold text-4xl md:text-5xl text-violet-700 dark:text-white uppercase">
             Properties
           </h1>
@@ -108,8 +120,8 @@ export default async function PropertiesPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 py-12">
-          {properties.length > 0 ? (
-            properties.map((property) => (
+          {sortedProperties.length > 0 ? (
+            sortedProperties.map((property) => (
               <PropertyCard key={property.id} property={property} />
             ))
           ) : (
