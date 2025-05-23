@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-
+import { notFound } from "next/navigation";
 import PropertyCard from "@/components/card/propertycard";
 import NoData from "@/components/error/nodata";
 
@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: "Properties",
   description:
     "Browse a diverse selection of properties for sale and rent. Find your dream home or next investment with ABIC Realty's expert listings.",
-
   openGraph: {
     title: "Properties | ABIC Realty",
     description:
@@ -26,7 +25,6 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
   },
-
   twitter: {
     card: "summary_large_image",
     site: "@AbicRealty",
@@ -38,7 +36,6 @@ export const metadata: Metadata = {
       `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}media/abic-realty-properties-banner.png`,
     ],
   },
-
   other: {
     "og:image:width": "1200",
     "og:image:height": "630",
@@ -60,50 +57,48 @@ interface Property {
   sale_type: string;
 }
 
-// Fetch properties with ISR
 const fetchProperties = async (): Promise<Property[]> => {
-  try {
-    const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/properties`;
-    if (!endpoint) {
-      throw new Error("API URL is not defined in the environment variables");
-    }
-    const res = await fetch(endpoint, {
-      cache: "no-store",
-    });
+  const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/properties`;
+  const res = await fetch(endpoint, { cache: "no-store" });
 
-    if (!res.ok) {
-      throw new Error(
-        `Failed to fetch properties: ${res.status} - ${res.statusText}`
-      );
-    }
-
-    const data = await res.json();
-
-    return data.records || [];
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch properties: ${
-        error instanceof Error ? error.message : error
-      }`
-    );
+  if (!res.ok) {
+    throw new Error(`Failed to fetch properties: ${res.statusText}`);
   }
+
+  const data = await res.json();
+  return data.records || [];
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function PropertiesPage() {
+export default async function PropertiesPage({
+  searchParams,
+}: {
+  searchParams?: { search?: string };
+}) {
+  const search = searchParams?.search?.toLowerCase() || "";
   const properties = await fetchProperties();
 
-  // Separate and sort properties by status and name
-  const forRent = properties
+  const filtered = properties.filter((p) => {
+    return (
+      p.name.toLowerCase().includes(search) ||
+      p.location.toLowerCase().includes(search) ||
+      p.description.toLowerCase().includes(search) ||
+      p.unit_status.toLowerCase().includes(search) ||
+      p.unit_type.toLowerCase().includes(search) ||
+      p.status.toLowerCase().includes(search) ||
+      p.price.toString().includes(search)
+    );
+  });
+
+  const forRent = filtered
     .filter((p) => p.status === "For Rent")
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const forSale = properties
+  const forSale = filtered
     .filter((p) => p.status === "For Sale")
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  // Combine arrays: For Rent first, then For Sale
   const sortedProperties = [...forRent, ...forSale];
 
   return (
@@ -118,6 +113,17 @@ export default async function PropertiesPage() {
             and personalized guidance.
           </p>
         </div>
+
+        {/* Search form aligned to the right */}
+        <form className="my-6 flex justify-end" action="/properties" method="get">
+          <input
+            type="text"
+            name="search"
+            placeholder="Search..."
+            defaultValue={searchParams?.search || ""}
+            className="w-full max-w-xs border border-gray-300 rounded-md p-2 dark:bg-gray-800 dark:text-white"
+          />
+        </form>
 
         <div className="grid grid-cols-1 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 py-12">
           {sortedProperties.length > 0 ? (
